@@ -1,4 +1,4 @@
-# Extensiones de Matías para Tachimanga
+# Extensiones de Msopla para Tachimanga
 
 Repositorio personal de **LectorXD, ManhwaShot y Olympus XYZ**, en español.
 
