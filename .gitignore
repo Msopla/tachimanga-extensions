@@ -1,0 +1,6 @@
+*.jks
+*.p12
+*.keystore
+*password*
+*privada*
+.env
