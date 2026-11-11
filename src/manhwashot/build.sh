@@ -9,8 +9,8 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-VERSION_CODE=2
-VERSION_NAME=1.4.2
+VERSION_CODE=3
+VERSION_NAME=1.4.3
 PKG=eu.kanade.tachiyomi.extension.es.manhwashot
 OUT=${OUT:-../../apk/tachiyomi-es.manhwashot-v$VERSION_NAME.apk}
 : "${KEYSTORE:?Falta KEYSTORE}" "${KEYSTORE_PASS:?Falta KEYSTORE_PASS}"

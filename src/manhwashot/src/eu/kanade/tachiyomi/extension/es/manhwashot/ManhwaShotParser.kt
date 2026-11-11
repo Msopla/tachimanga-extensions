@@ -21,7 +21,8 @@ object ManhwaShotParser {
         val status: Int = 0,
     )
 
-    data class Chapter(val url: String, val name: String, val number: Float)
+    /** [date]: milisegundos Unix (0 si no se conoce). */
+    data class Chapter(val url: String, val name: String, val number: Float, val date: Long = 0L)
 
     data class Catalogue(val mangas: List<Manga>, val hasNext: Boolean)
 
@@ -80,7 +81,8 @@ object ManhwaShotParser {
             if (!path.startsWith("$base/capitulo-")) return@mapNotNull null
             val num = path.trimEnd('/').substringAfterLast("capitulo-")
             val number = num.toFloatOrNull() ?: return@mapNotNull null
-            Chapter(path, "Capítulo $num", number)
+            val date = row.select("span").lastOrNull()?.let { relativeDate(it.text()) } ?: 0L
+            Chapter(path, "Capítulo $num", number, date)
         }.distinctBy { it.url }.sortedByDescending { it.number }
 
         val announced = doc.selectFirst(".ch-filter-count")?.text()?.toIntOrNull()
@@ -101,6 +103,24 @@ object ManhwaShotParser {
             .map { imageUrl(it) }
             .filter { it.startsWith("https://") || it.startsWith("http://") }
             .distinct()
+    }
+
+    private val RELATIVE = Regex("""hace\s+(un|una|\d+)\s+(segundo|minuto|hora|d[ií]a|semana|mes|año|ano)""", RegexOption.IGNORE_CASE)
+
+    /** "hace 9 días" → fecha aproximada (respaldo si la página no trae las fechas exactas). */
+    fun relativeDate(text: String, now: Long = System.currentTimeMillis()): Long {
+        val match = RELATIVE.find(text) ?: return 0L
+        val amount = match.groupValues[1].toLongOrNull() ?: 1L
+        val unit = when (match.groupValues[2].lowercase().replace('í', 'i')) {
+            "segundo" -> 1_000L
+            "minuto" -> 60_000L
+            "hora" -> 3_600_000L
+            "dia" -> 86_400_000L
+            "semana" -> 7 * 86_400_000L
+            "mes" -> 30 * 86_400_000L
+            else -> 365 * 86_400_000L
+        }
+        return now - amount * unit
     }
 
     private fun imageUrl(img: Element): String {

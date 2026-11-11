@@ -17,7 +17,7 @@ Después actualiza la lista de extensiones. Si ya tienes estos APK importados, c
 | Fuente | Versión | Descargar APK |
 |---|---|---|
 | LectorXD | 1.4.3 | [Descargar](https://raw.githubusercontent.com/Msopla/tachimanga-extensions/main/apk/tachiyomi-es.lectorxd-v1.4.3.apk) |
-| ManhwaShot | 1.4.2 | [Descargar](https://raw.githubusercontent.com/Msopla/tachimanga-extensions/main/apk/tachiyomi-es.manhwashot-v1.4.2.apk) |
+| ManhwaShot | 1.4.3 | [Descargar](https://raw.githubusercontent.com/Msopla/tachimanga-extensions/main/apk/tachiyomi-es.manhwashot-v1.4.3.apk) |
 | Olympus XYZ | 1.4.1 | [Descargar](https://raw.githubusercontent.com/Msopla/tachimanga-extensions/main/apk/tachiyomi-es.olympusxyz-v1.4.1.apk) |
 
 También puedes guardar un APK en Archivos del iPhone e importarlo desde **Explorar → Extensiones → +**.
@@ -25,6 +25,7 @@ También puedes guardar un APK en Archivos del iPhone e importarlo desde **Explo
 ## Estado
 
 - **LectorXD 1.4.3:** versión original que corrigió la lista incompleta de capítulos, confirmada por el usuario en Tachimanga.
+- **ManhwaShot 1.4.3:** muestra la fecha real de subida de cada capítulo (antes todas salían como "Hoy").
 - **ManhwaShot 1.4.2:** reconstruida desde el APK 1.4.1, con el código en `src/manhwashot/`. Añade los capítulos "gratis solo para usuarios": usa la sesión iniciada en el WebView de Tachimanga, pide las páginas protegidas, renueva los enlaces caducados y descifra las imágenes como hace la web. Sin sesión muestra un aviso claro. Catálogo, búsqueda, ficha, capítulos y páginas libres comprobados contra el sitio; las páginas protegidas, solo contra un servidor simulado.
   - **Importante:** se firmó con una clave nueva (la original no estaba disponible). Para pasar de la 1.4.1 hay que desinstalar ManhwaShot y volver a instalarla; la biblioteca se conserva porque el identificador de la fuente no cambia.
 - **Olympus XYZ 1.4.1:** búsqueda, paginación, imágenes y listas reales de 188 y 233 capítulos verificadas; funcionamiento confirmado por el usuario en Tachimanga.
