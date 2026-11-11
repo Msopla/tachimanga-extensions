@@ -55,14 +55,20 @@ class ManhwaShot : HttpSource() {
     override fun mangaDetailsParse(response: Response): SManga =
         toManga(ManhwaShotParser.details(document(response))).apply { initialized = true }
 
-    override fun chapterListParse(response: Response): List<SChapter> =
-        ManhwaShotParser.chapters(document(response)).map { chapter ->
+    override fun chapterListParse(response: Response): List<SChapter> {
+        val html = response.body?.string() ?: throw IllegalStateException("Respuesta vacía.")
+        val doc = Jsoup.parse(html, response.request.url.toString())
+        // Fecha exacta de subida (mapa "dates" de la ficha); si falta, la aproximada de "hace X días".
+        val dates = runCatching { ReaderData.chapterDates(html) }.getOrDefault(emptyMap())
+        return ManhwaShotParser.chapters(doc).map { chapter ->
             SChapter.create().apply {
                 url = chapter.url
                 name = chapter.name
                 chapter_number = chapter.number
+                date_upload = dates[chapter.url.trimEnd('/').substringAfterLast("capitulo-")] ?: chapter.date
             }
         }
+    }
 
     // ===== Páginas =====
 

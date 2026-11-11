@@ -28,17 +28,33 @@ data class ReaderData(
         private const val PUSH = "self.__next_f.push([1,\""
         private val NUMBER = Regex("""^-?\d+(\.\d+)?$""")
 
-        fun extract(html: String): ReaderData? {
-            val payload = buildString {
-                var at = html.indexOf(PUSH)
-                while (at >= 0) {
-                    val from = at + PUSH.length
-                    val end = closingQuote(html, from) ?: break
-                    append(unescape(html.substring(from, end)))
-                    at = html.indexOf(PUSH, end)
-                }
+        /** Concatena y decodifica los fragmentos `self.__next_f.push([1,"…"])`. */
+        fun payload(html: String): String = buildString {
+            var at = html.indexOf(PUSH)
+            while (at >= 0) {
+                val from = at + PUSH.length
+                val end = closingQuote(html, from) ?: break
+                append(unescape(html.substring(from, end)))
+                at = html.indexOf(PUSH, end)
             }
-            val obj = readerObject(payload) ?: readerObject(html.replace("\\\"", "\"")) ?: return null
+        }
+
+        /**
+         * Fechas de subida de la ficha de la serie: `"dates":{"1":1781363986,"100.2":1793601220,…}`
+         * (segundos Unix). Devuelve número de capítulo (como en la URL) → milisegundos.
+         */
+        fun chapterDates(html: String): Map<String, Long> {
+            val text = payload(html).ifEmpty { html.replace("\\\"", "\"") }
+            val start = text.indexOf("\"dates\":{")
+            if (start < 0) return emptyMap()
+            val end = text.indexOf('}', start)
+            if (end < 0) return emptyMap()
+            return Regex(""""([0-9.]+)":(\d+)""").findAll(text.substring(start + 8, end))
+                .associate { it.groupValues[1] to it.groupValues[2].toLong() * 1000 }
+        }
+
+        fun extract(html: String): ReaderData? {
+            val obj = readerObject(payload(html)) ?: readerObject(html.replace("\\\"", "\"")) ?: return null
 
             val postId = Regex(""""postId":(\d+)""").find(obj)?.groupValues?.get(1)?.toLongOrNull() ?: 0L
             val num = Regex(""""num":([0-9.]+)""").find(obj)?.groupValues?.get(1)?.takeIf { NUMBER.matches(it) } ?: ""
