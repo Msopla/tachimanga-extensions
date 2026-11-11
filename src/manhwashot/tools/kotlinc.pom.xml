@@ -1,0 +1,2 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"><modelVersion>4.0.0</modelVersion><groupId>local</groupId><artifactId>kotlinc</artifactId><version>1</version>
+<dependencies><dependency><groupId>org.jetbrains.kotlin</groupId><artifactId>kotlin-compiler-embeddable</artifactId><version>1.9.24</version></dependency></dependencies></project>
