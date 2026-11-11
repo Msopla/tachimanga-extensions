@@ -10,18 +10,33 @@ import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import rx.Observable
 
-/** Stub de compilación (extensions-lib). No se empaqueta en el APK. */
+/**
+ * Stub de compilación (extensions-lib). No se empaqueta en el APK: la clase
+ * real la aporta la app. Solo declara lo que usan las extensiones de este
+ * repositorio, con las mismas firmas que la API real.
+ */
 abstract class HttpSource {
     val network: NetworkHelper get() = throw UnsupportedOperationException("stub")
     abstract val name: String
     abstract val lang: String
     abstract val supportsLatest: Boolean
     abstract val baseUrl: String
+    open val id: Long get() = throw UnsupportedOperationException("stub")
     open val client: OkHttpClient get() = throw UnsupportedOperationException("stub")
     val headers: Headers get() = throw UnsupportedOperationException("stub")
 
     protected open fun headersBuilder(): Headers.Builder = throw UnsupportedOperationException("stub")
+
+    open fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
+        throw UnsupportedOperationException("stub")
+
+    open fun mangaDetailsRequest(manga: SManga): Request = throw UnsupportedOperationException("stub")
+    protected open fun chapterListRequest(manga: SManga): Request = throw UnsupportedOperationException("stub")
+    protected open fun pageListRequest(chapter: SChapter): Request = throw UnsupportedOperationException("stub")
+    open fun getMangaUrl(manga: SManga): String = throw UnsupportedOperationException("stub")
+    open fun getChapterUrl(chapter: SChapter): String = throw UnsupportedOperationException("stub")
 
     protected abstract fun popularMangaRequest(page: Int): Request
     protected abstract fun popularMangaParse(response: Response): MangasPage

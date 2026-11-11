@@ -26,7 +26,7 @@ También puedes guardar un APK en Archivos del iPhone e importarlo desde **Explo
 
 - **LectorXD 1.4.3:** versión original que corrigió la lista incompleta de capítulos, confirmada por el usuario en Tachimanga.
 - **ManhwaShot 1.4.3:** muestra la fecha real de subida de cada capítulo (antes todas salían como "Hoy").
-- **ManhwaShot 1.4.2:** reconstruida desde el APK 1.4.1, con el código en `src/manhwashot/`. Añade los capítulos "gratis solo para usuarios": usa la sesión iniciada en el WebView de Tachimanga, pide las páginas protegidas, renueva los enlaces caducados y descifra las imágenes como hace la web. Sin sesión muestra un aviso claro. Catálogo, búsqueda, ficha, capítulos y páginas libres comprobados contra el sitio; las páginas protegidas, solo contra un servidor simulado.
+- **ManhwaShot 1.4.2:** reconstruida desde el APK 1.4.1. Añade los capítulos "gratis solo para usuarios": usa la sesión iniciada en el WebView de Tachimanga, pide las páginas protegidas, renueva los enlaces caducados y descifra las imágenes como hace la web. Sin sesión muestra un aviso claro. Catálogo, búsqueda, ficha, capítulos y páginas libres comprobados contra el sitio; las páginas protegidas, solo contra un servidor simulado.
   - **Importante:** se firmó con una clave nueva (la original no estaba disponible). Para pasar de la 1.4.1 hay que desinstalar ManhwaShot y volver a instalarla; la biblioteca se conserva porque el identificador de la fuente no cambia.
 - **Olympus XYZ 1.4.1:** búsqueda, paginación, imágenes y listas reales de 188 y 233 capítulos verificadas; funcionamiento confirmado por el usuario en Tachimanga.
 
@@ -36,25 +36,53 @@ Las tres firmas y los metadatos de los APK se verificaron al publicar. Los binar
 
 Los nuevos capítulos se obtienen de cada sitio al actualizar la serie. Este repositorio distribuye actualizaciones de las extensiones; no corrige automáticamente los cambios de las páginas web.
 
-Para publicar una actualización:
+## Código fuente
 
-1. Corregir y probar la extensión.
-2. Conservar el paquete, identificador de fuente y clave de firma originales; aumentar el código y nombre de versión.
-3. Añadir el APK firmado en `apk/`.
-4. Actualizar `index.json` e `index.min.json` con la nueva versión y nombre del APK.
-5. Actualizar `SHA256SUMS` y comprobar que la firma coincide con `certificates.json`.
+El código de las tres extensiones está en `src/`. Se reconstruyó a partir de los APK publicados, porque el código original se había perdido:
 
-Las claves de firma son privadas y no se incluyen en este repositorio. `certificates.json` contiene únicamente huellas públicas de los certificados. La clave original de LectorXD deberá conservarse o recuperarse de su proyecto para firmar futuras actualizaciones compatibles. ManhwaShot usa desde la 1.4.2 una clave nueva que guarda el autor.
+| Carpeta | Lenguaje | Incluye en el APK |
+|---|---|---|
+| `src/manhwashot/` | Kotlin | — |
+| `src/lectorxd/` | Kotlin | minimal-json 0.9.5 |
+| `src/olympusxyz/` | Java | Gson 2.10.1 |
 
-### Compilar ManhwaShot
+Comprobaciones de la reconstrucción:
 
-El código está en `src/manhwashot/` y no necesita el SDK de Android: solo JDK 17 o superior, Maven y Python 3. El script descarga de Maven Central el compilador de Kotlin, OkHttp, Jsoup y `dx`, compila contra stubs de la API de extensiones, reutiliza el manifiesto binario original con la versión actualizada y firma el APK:
+- **LectorXD y Olympus XYZ:** se ejecutaron el APK original y el reconstruido con las mismas entradas y dieron resultados idénticos. En Olympus XYZ se comparó contra el sitio real: catálogo, búsqueda, novedades, fichas, más de 1.000 capítulos y sus páginas. En LectorXD, contra el sitio real en catálogo, búsqueda y novedades, y contra páginas de prueba en ficha, capítulos (incluidos paginación y errores) y lector.
+- **LectorXD y Olympus XYZ publicadas:** siguen siendo los APK originales. El código sirve para futuras actualizaciones.
+
+Cada extensión tiene en su carpeta:
+
+- `ext.conf`: paquete, versión y nombre de la firma.
+- `src/`: el código.
+- `base/`: manifiesto binario, `resources.arsc` y archivos originales del APK.
+- `bundle.pom.xml`: solo si la extensión incluye librerías propias.
+
+Los stubs de la API de extensiones y las herramientas comunes están en `src/common/`.
+
+### Compilar
+
+No hace falta el SDK de Android: basta con JDK 17 o superior, Maven y Python 3. El script descarga de Maven Central el compilador de Kotlin, OkHttp, Jsoup, RxJava y `dx` en `src/.tools/`, que está ignorado por git:
 
 ```bash
-KEYSTORE=/ruta/manhwashot-firma.p12 KEYSTORE_PASS=... ./src/manhwashot/build.sh
+KEYSTORE=/ruta/<extension>-firma.p12 KEYSTORE_PASS=... ./src/build.sh <manhwashot|lectorxd|olympusxyz>
 ```
 
-Para una nueva versión, cambia `VERSION_CODE`/`VERSION_NAME` en `build.sh` (el nombre de versión debe tener 5 caracteres, p. ej. `1.4.3`).
+El APK resultante queda en `apk/`.
+
+### Publicar una actualización
+
+1. Corregir el código en `src/<extension>/src/` y probarlo.
+2. Aumentar `VERSION_CODE` y `VERSION_NAME` en `src/<extension>/ext.conf`. El nombre de versión debe tener 5 caracteres, por ejemplo `1.4.4`.
+3. Compilar con `./src/build.sh <extension>` y borrar el APK anterior de `apk/`.
+4. Actualizar `index.json` e `index.min.json` con el nuevo nombre de APK, el código y la versión.
+5. Actualizar `SHA256SUMS`. Si cambió la clave, actualizar también la huella en `certificates.json`.
+
+No cambies nunca el paquete ni el identificador de la fuente: la biblioteca de Tachimanga depende de ellos.
+
+### Claves de firma
+
+Las claves son privadas y no se incluyen en este repositorio. `certificates.json` contiene solo las huellas públicas de los APK publicados. Las claves originales de LectorXD y Olympus XYZ no estaban disponibles, así que la próxima versión de cada una se firmará con su clave nueva, que guarda el autor. ManhwaShot ya usa su clave nueva desde la 1.4.2. Tachimanga aceptó el cambio de clave de ManhwaShot con el botón **Actualizar**; si en algún caso no lo acepta, basta con desinstalar la extensión y volver a instalarla.
 
 Documentación oficial: [repositorios](https://tachimanga.app/help/guides/repositories.html) e [importación de APK](https://tachimanga.app/help/guides/add-extension-file.html).
 
